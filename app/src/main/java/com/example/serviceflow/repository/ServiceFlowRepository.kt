@@ -1,5 +1,6 @@
 package com.example.serviceflow.repository
 
+import android.util.Log
 import com.example.serviceflow.model.OrdemServico
 import com.example.serviceflow.model.User
 import com.example.serviceflow.network.ApiService
@@ -25,25 +26,75 @@ class ServiceFlowRepository {
                 trySend(null)
                 return@AuthStateListener
             }
+
+            Log.d("REPO", " Buscando usuário UID: ${firebaseUser.uid}")
+
             firestore.collection("users").document(firebaseUser.uid).get()
-                .addOnSuccessListener { doc ->
-                    val user = doc.toObject<User>()?.copy(id = firebaseUser.uid)
-                        ?: User(id = firebaseUser.uid, email = firebaseUser.email ?: "", nome = firebaseUser.email ?: "")
-                    trySend(user)
+                .addOnSuccessListener { document ->
+                    if (document.exists()) {
+                        val nome = document.getString("nome") ?: firebaseUser.email ?: ""
+                        val email = document.getString("email") ?: firebaseUser.email ?: ""
+                        val tipo = document.getString("tipo") ?: "funcionario"
+                        val departamento = document.getString("departamento") ?: ""
+
+                        val user = User(
+                            id = firebaseUser.uid,
+                            nome = nome,
+                            email = email,
+                            tipo = tipo,
+                            departamento = departamento
+                        )
+                        Log.d("REPO", " Usuário encontrado: ${user.nome}, tipo: ${user.tipo}")
+                        trySend(user)
+                    } else {
+                        Log.e("REPO", " Documento NÃO encontrado para UID: ${firebaseUser.uid}")
+                        trySend(null)
+                    }
                 }
-                .addOnFailureListener { trySend(null) }
+                .addOnFailureListener { e ->
+                    Log.e("REPO", " Erro ao buscar: ${e.message}")
+                    trySend(null)
+                }
         }
         auth.addAuthStateListener(listener)
         awaitClose { auth.removeAuthStateListener(listener) }
     }
 
     suspend fun login(email: String, password: String): Result<User> = try {
+        Log.d("REPO", " Login: $email")
         val result = auth.signInWithEmailAndPassword(email, password).await()
         val firebaseUser = result.user ?: throw Exception("Usuário não encontrado")
-        val doc = firestore.collection("users").document(firebaseUser.uid).get().await()
-        val user = doc.toObject<User>()?.copy(id = firebaseUser.uid) ?: User(id = firebaseUser.uid, email = email, nome = email)
+
+        val document = firestore.collection("users").document(firebaseUser.uid).get().await()
+
+        val user = if (document.exists()) {
+            val nome = document.getString("nome") ?: firebaseUser.email ?: ""
+            val emailDoc = document.getString("email") ?: firebaseUser.email ?: ""
+            val tipo = document.getString("tipo") ?: "funcionario"
+            val departamento = document.getString("departamento") ?: ""
+
+            User(
+                id = firebaseUser.uid,
+                nome = nome,
+                email = emailDoc,
+                tipo = tipo,
+                departamento = departamento
+            )
+        } else {
+            Log.e("REPO", " Documento não encontrado para UID: ${firebaseUser.uid}")
+            User(
+                id = firebaseUser.uid,
+                nome = firebaseUser.email ?: "",
+                email = firebaseUser.email ?: "",
+                tipo = "funcionario",
+                departamento = ""
+            )
+        }
+
+        Log.d("REPO", " Login sucesso: ${user.nome}, tipo: ${user.tipo}")
         Result.success(user)
     } catch (e: Exception) {
+        Log.e("REPO", " Login falhou: ${e.message}")
         Result.failure(e)
     }
 

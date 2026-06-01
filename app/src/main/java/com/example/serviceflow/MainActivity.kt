@@ -13,9 +13,9 @@ import com.example.serviceflow.model.OrdemServico
 import com.example.serviceflow.model.TipoUsuario
 import com.example.serviceflow.ui.screens.*
 import com.example.serviceflow.ui.theme.ServiceFlowTheme
-import com.example.serviceflow.viewmodel.AdminViewModel
-import com.example.serviceflow.viewmodel.AuthViewModel
-import com.example.serviceflow.viewmodel.FuncionarioViewModel
+import com.example.serviceflow.modelos.AdminViewModel
+import com.example.serviceflow.modelos.AuthViewModel
+import com.example.serviceflow.modelos.FuncionarioViewModel
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -34,12 +34,16 @@ class MainActivity : ComponentActivity() {
 fun ServiceFlowApp() {
     val authViewModel: AuthViewModel = viewModel()
     val currentUser by authViewModel.currentUser.collectAsState()
-    var tipoUsuario by remember { mutableStateOf<TipoUsuario?>(null) }
     var selectedOS by remember { mutableStateOf<OrdemServico?>(null) }
 
-    if (tipoUsuario == null && currentUser == null) {
-        LoginScreen(viewModel = authViewModel, onLoginSuccess = { tipo -> tipoUsuario = tipo })
+    if (currentUser == null) {
+        LoginScreen(
+            viewModel = authViewModel,
+            onLoginSuccess = { _ -> }
+        )
     } else {
+        val tipoUsuario = if (currentUser?.tipo == "admin") TipoUsuario.ADMIN else TipoUsuario.FUNCIONARIO
+
         if (selectedOS != null) {
             DetalheOSScreen(
                 os = selectedOS!!,
@@ -55,7 +59,7 @@ fun ServiceFlowApp() {
                         currentUser = currentUser!!,
                         viewModel = adminViewModel,
                         onOSClick = { os -> selectedOS = os },
-                        onLogout = { authViewModel.logout(); tipoUsuario = null }
+                        onLogout = { authViewModel.logout() }
                     )
                 }
                 TipoUsuario.FUNCIONARIO -> {
@@ -64,10 +68,9 @@ fun ServiceFlowApp() {
                         currentUser = currentUser!!,
                         viewModel = funcViewModel,
                         onOSClick = { os -> selectedOS = os },
-                        onLogout = { authViewModel.logout(); tipoUsuario = null }
+                        onLogout = { authViewModel.logout() }
                     )
                 }
-                null -> {}
             }
         }
     }

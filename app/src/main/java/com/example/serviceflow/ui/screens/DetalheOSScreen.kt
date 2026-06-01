@@ -1,12 +1,14 @@
 package com.example.serviceflow.ui.screens
 
+import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material3.*
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -16,8 +18,8 @@ import androidx.compose.ui.unit.sp
 import com.example.serviceflow.model.OrdemServico
 import com.example.serviceflow.ui.components.StatusBadge
 import com.example.serviceflow.ui.theme.Azul500
-import com.example.serviceflow.viewmodel.FuncAction
-import com.example.serviceflow.viewmodel.FuncionarioViewModel
+import com.example.serviceflow.modelos.FuncAction
+import com.example.serviceflow.modelos.FuncionarioViewModel
 import java.text.SimpleDateFormat
 import java.util.*
 
@@ -29,6 +31,8 @@ fun DetalheOSScreen(
     viewModel: FuncionarioViewModel?,
     onBack: () -> Unit
 ) {
+    BackHandler(onBack = onBack)
+
     val action by viewModel?.action?.collectAsState() ?: remember { mutableStateOf(FuncAction.Idle) }.let { s -> derivedStateOf { s.value } }
     var realizadoPor by remember { mutableStateOf(os.realizadoPor) }
     var snackbarMessage by remember { mutableStateOf<String?>(null) }
@@ -48,7 +52,7 @@ fun DetalheOSScreen(
         topBar = {
             TopAppBar(
                 title = { Text(os.numero, fontWeight = FontWeight.Medium) },
-                navigationIcon = { IconButton(onClick = onBack) { Icon(Icons.Default.ArrowBack, contentDescription = "Voltar", tint = Color.White) } },
+                navigationIcon = { IconButton(onClick = onBack) { Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Voltar", tint = Color.White) } },
                 actions = { Box(modifier = Modifier.padding(end = 12.dp)) { StatusBadge(status = os.status) } },
                 colors = TopAppBarDefaults.topAppBarColors(containerColor = Azul500, titleContentColor = Color.White)
             )
@@ -70,11 +74,33 @@ fun DetalheOSScreen(
                 Card(shape = RoundedCornerShape(12.dp), colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)) {
                     Column(modifier = Modifier.padding(12.dp)) {
                         InfoRow("Número", os.numero)
-                        Divider()
+                        HorizontalDivider(
+                            Modifier,
+                            DividerDefaults.Thickness,
+                            DividerDefaults.color
+                        )
                         InfoRow("Criado em", dateFormat.format(os.dataCriacao.toDate()))
-                        if (os.departamento.isNotBlank()) { Divider(); InfoRow("Departamento", os.departamento) }
-                        if (os.funcionarioNome.isNotBlank()) { Divider(); InfoRow("Responsável", os.funcionarioNome) }
-                        if (os.dataConclusao != null) { Divider(); InfoRow("Concluída em", dateFormat.format(os.dataConclusao.toDate())) }
+                        if (os.departamento.isNotBlank()) {
+                            HorizontalDivider(
+                                Modifier,
+                                DividerDefaults.Thickness,
+                                DividerDefaults.color
+                            )
+                            InfoRow("Departamento", os.departamento) }
+                        if (os.funcionarioNome.isNotBlank()) {
+                            HorizontalDivider(
+                                Modifier,
+                                DividerDefaults.Thickness,
+                                DividerDefaults.color
+                            )
+                            InfoRow("Responsável", os.funcionarioNome) }
+                        if (os.dataConclusao != null) {
+                            HorizontalDivider(
+                                Modifier,
+                                DividerDefaults.Thickness,
+                                DividerDefaults.color
+                            )
+                            InfoRow("Concluída em", dateFormat.format(os.dataConclusao.toDate())) }
                     }
                 }
                 Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {

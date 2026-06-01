@@ -6,14 +6,13 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.viewinterop.AndroidView
 import com.example.serviceflow.model.TipoUsuario
-import com.example.serviceflow.viewmodel.AuthViewModel
-import com.example.serviceflow.viewmodel.LoginState
+import com.example.serviceflow.modelos.AuthViewModel
+import com.example.serviceflow.modelos.LoginState
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -28,7 +27,7 @@ fun LoginScreen(
     LaunchedEffect(loginState) {
         if (loginState is LoginState.Success) {
             val user = (loginState as LoginState.Success).user
-            val tipo = if (user.tipo == "admin") TipoUsuario.ADMIN else TipoUsuario.FUNCIONARIO
+            val tipo = if (user.tipo.equals("admin", ignoreCase = true)) TipoUsuario.ADMIN else TipoUsuario.FUNCIONARIO
             onLoginSuccess(tipo)
             viewModel.resetState()
         }
