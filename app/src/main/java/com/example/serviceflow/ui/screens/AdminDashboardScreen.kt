@@ -15,12 +15,14 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.example.serviceflow.R
 import com.example.serviceflow.model.OrdemServico
 import com.example.serviceflow.model.User
 import com.example.serviceflow.ui.components.*
 import com.example.serviceflow.ui.theme.Azul500
-import com.example.serviceflow.modelos.AdminAction
-import com.example.serviceflow.modelos.AdminViewModel
+import com.example.serviceflow.viewmodel.AdminAction
+import com.example.serviceflow.viewmodel.AdminViewModel
+import androidx.compose.ui.res.stringResource
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -36,16 +38,17 @@ fun AdminDashboardScreen(
     var snackbarMessage by remember { mutableStateOf<String?>(null) }
     val snackbarHostState = remember { SnackbarHostState() }
     var termoBusca by remember { mutableStateOf("") }
+    val context = androidx.compose.ui.platform.LocalContext.current
 
     LaunchedEffect(action) {
         when (action) {
             is AdminAction.OrdemCriada -> {
                 showNovaOS = false
-                snackbarMessage = "Ordem criada com sucesso!"
+                snackbarMessage = context.getString(R.string.success_creating_os)
                 viewModel.resetAction()
             }
             is AdminAction.Error -> {
-                snackbarMessage = (action as AdminAction.Error).message
+                snackbarMessage = (action as AdminAction.Error).message.asString(context)
                 viewModel.resetAction()
             }
             else -> {}
@@ -64,8 +67,8 @@ fun AdminDashboardScreen(
             TopAppBar(
                 title = {
                     Column {
-                        Text("Ordens de Serviço", fontWeight = FontWeight.Medium, fontSize = 16.sp)
-                        Text("Administrador", fontSize = 11.sp, color = Color.White.copy(alpha = 0.7f))
+                        Text(stringResource(R.string.title_ordens_servico), fontWeight = FontWeight.Medium, fontSize = 16.sp)
+                        Text(stringResource(R.string.role_admin), fontSize = 11.sp, color = Color.White.copy(alpha = 0.7f))
                     }
                 },
                 actions = {
@@ -80,7 +83,7 @@ fun AdminDashboardScreen(
                     }
                     Spacer(Modifier.width(4.dp))
                     IconButton(onClick = onLogout) {
-                        Icon(Icons.Default.ExitToApp, contentDescription = "Sair", tint = Color.White)
+                        Icon(Icons.Default.ExitToApp, contentDescription = stringResource(R.string.action_logout), tint = Color.White)
                     }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(
@@ -95,7 +98,7 @@ fun AdminDashboardScreen(
                 containerColor = Azul500,
                 contentColor = Color.White
             ) {
-                Icon(Icons.Default.Add, contentDescription = "Nova OS")
+                Icon(Icons.Default.Add, contentDescription = stringResource(R.string.action_new_os))
             }
         },
         snackbarHost = { SnackbarHost(snackbarHostState) }
@@ -108,13 +111,17 @@ fun AdminDashboardScreen(
                 value = termoBusca,
                 onValueChange = { termoBusca = it },
                 modifier = Modifier.fillMaxWidth(),
-                placeholder = { Text("Buscar por título...") },
+                placeholder = { Text(stringResource(R.string.hint_search_title)) },
                 singleLine = true
             )
 
-            SectionHeader("Filtrar por status")
+            SectionHeader(stringResource(R.string.filter_by_status))
             FiltroChips(
-                opcoes = listOf("todas" to "Todas", "pendente" to "Pendentes", "concluida" to "Concluídas"),
+                opcoes = listOf(
+                    "todas" to stringResource(R.string.label_all),
+                    "pendente" to stringResource(R.string.label_pending),
+                    "concluida" to stringResource(R.string.label_completed)
+                ),
                 selecionado = uiState.filtroStatus,
                 onSelect = { viewModel.setFiltroStatus(it) }
             )
@@ -128,7 +135,7 @@ fun AdminDashboardScreen(
                     modifier = Modifier.fillMaxSize(),
                     contentAlignment = Alignment.Center
                 ) {
-                    Text("Nenhuma ordem encontrada.\nClique no + para criar uma nova.")
+                    Text(stringResource(R.string.empty_ordens_message))
                 }
             } else {
                 LazyColumn {
@@ -160,6 +167,7 @@ fun NovaOSSheet(
     onDismiss: () -> Unit,
     onEnviar: (String, String, String, User) -> Unit
 ) {
+    val context = androidx.compose.ui.platform.LocalContext.current
     var titulo by remember { mutableStateOf("") }
     var descricao by remember { mutableStateOf("") }
     var departamento by remember { mutableStateOf("") }
@@ -167,26 +175,26 @@ fun NovaOSSheet(
     var expandedDept by remember { mutableStateOf(false) }
     var expandedFunc by remember { mutableStateOf(false) }
 
-    val departamentos = listOf("Manutenção", "TI", "Limpeza", "Segurança", "Administrativo")
+    val departamentos = context.resources.getStringArray(R.array.departments_list).toList()
 
     ModalBottomSheet(onDismissRequest = onDismiss) {
         Column(
             modifier = Modifier.fillMaxWidth().padding(20.dp),
             verticalArrangement = Arrangement.spacedBy(14.dp)
         ) {
-            Text("Nova Ordem de Serviço", fontWeight = FontWeight.Medium, fontSize = 17.sp)
+            Text(stringResource(R.string.title_new_os), fontWeight = FontWeight.Medium, fontSize = 17.sp)
 
             OutlinedTextField(
                 value = titulo,
                 onValueChange = { titulo = it },
-                label = { Text("Título") },
+                label = { Text(stringResource(R.string.label_title)) },
                 modifier = Modifier.fillMaxWidth()
             )
 
             OutlinedTextField(
                 value = descricao,
                 onValueChange = { descricao = it },
-                label = { Text("Descrição") },
+                label = { Text(stringResource(R.string.label_description)) },
                 modifier = Modifier.fillMaxWidth().height(100.dp)
             )
 
@@ -198,7 +206,7 @@ fun NovaOSSheet(
                     value = departamento,
                     onValueChange = {},
                     readOnly = true,
-                    label = { Text("Departamento") },
+                    label = { Text(stringResource(R.string.label_department)) },
                     trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expandedDept) },
                     modifier = Modifier.fillMaxWidth().menuAnchor()
                 )
@@ -220,7 +228,7 @@ fun NovaOSSheet(
                     value = funcionarioSelecionado?.nome ?: "",
                     onValueChange = {},
                     readOnly = true,
-                    label = { Text("Funcionário") },
+                    label = { Text(stringResource(R.string.label_employee)) },
                     trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expandedFunc) },
                     modifier = Modifier.fillMaxWidth().menuAnchor()
                 )
@@ -244,7 +252,7 @@ fun NovaOSSheet(
                 enabled = !isLoading && funcionarioSelecionado != null && titulo.isNotBlank() && descricao.isNotBlank() && departamento.isNotBlank()
             ) {
                 if (isLoading) CircularProgressIndicator(modifier = Modifier.size(20.dp))
-                else Text("Enviar OS")
+                else Text(stringResource(R.string.action_send_os))
             }
         }
     }

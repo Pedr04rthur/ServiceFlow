@@ -13,11 +13,17 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.callbackFlow
 import kotlinx.coroutines.tasks.await
 import com.google.firebase.Timestamp
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 
-class ServiceFlowRepository {
+class ServiceFlowRepository(
+    private val ordemDao: com.example.serviceflow.data.local.OrdemDao
+) {
     private val auth = FirebaseAuth.getInstance()
     private val firestore = FirebaseFirestore.getInstance()
     private val apiService: ApiService = RetrofitInstance.api
+    private val repositoryScope = CoroutineScope(Dispatchers.IO)
 
     fun getCurrentUser(): Flow<User?> = callbackFlow {
         val listener = FirebaseAuth.AuthStateListener { auth ->
@@ -102,15 +108,18 @@ class ServiceFlowRepository {
         auth.signOut()
     }
 
-    fun getTodasOrdens(): Flow<List<OrdemServico>> = callbackFlow {
-        val subscription = firestore.collection("ordens")
+    fun getTodasOrdens(): Flow<List<OrdemServico>> {
+        firestore.collection("ordens")
             .orderBy("dataCriacao", com.google.firebase.firestore.Query.Direction.DESCENDING)
             .addSnapshotListener { snapshot, error ->
-                if (error != null) { close(error); return@addSnapshotListener }
-                val ordens = snapshot?.documents?.mapNotNull { it.toObject<OrdemServico>()?.copy(id = it.id) } ?: emptyList()
-                trySend(ordens)
+                if (error == null) {
+                    val ordens = snapshot?.documents?.mapNotNull { it.toObject<OrdemServico>()?.copy(id = it.id) } ?: emptyList()
+                    repositoryScope.launch {
+                        ordemDao.insertOrdens(ordens)
+                    }
+                }
             }
-        awaitClose { subscription.remove() }
+        return ordemDao.getTodasOrdens()
     }
 
     fun getOrdensDoFuncionario(funcionarioId: String): Flow<List<OrdemServico>> = callbackFlow {
@@ -125,15 +134,18 @@ class ServiceFlowRepository {
         awaitClose { subscription.remove() }
     }
 
-    fun getFuncionarios(): Flow<List<User>> = callbackFlow {
-        val subscription = firestore.collection("users")
+    fun getFuncionarios(): Flow<List<User>> {
+        firestore.collection("users")
             .whereEqualTo("tipo", "funcionario")
             .addSnapshotListener { snapshot, error ->
-                if (error != null) { close(error); return@addSnapshotListener }
-                val users = snapshot?.documents?.mapNotNull { it.toObject<User>()?.copy(id = it.id) } ?: emptyList()
-                trySend(users)
+                if (error == null) {
+                    val users = snapshot?.documents?.mapNotNull { it.toObject<User>()?.copy(id = it.id) } ?: emptyList()
+                    repositoryScope.launch {
+                        ordemDao.insertUsers(users)
+                    }
+                }
             }
-        awaitClose { subscription.remove() }
+        return ordemDao.getFuncionarios()
     }
 
     suspend fun criarOrdem(titulo: String, descricao: String, departamento: String, funcionarioId: String, funcionarioNome: String): Result<Unit> = try {

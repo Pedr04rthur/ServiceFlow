@@ -13,9 +13,11 @@ import com.example.serviceflow.model.OrdemServico
 import com.example.serviceflow.model.TipoUsuario
 import com.example.serviceflow.ui.screens.*
 import com.example.serviceflow.ui.theme.ServiceFlowTheme
-import com.example.serviceflow.modelos.AdminViewModel
-import com.example.serviceflow.modelos.AuthViewModel
-import com.example.serviceflow.modelos.FuncionarioViewModel
+import com.example.serviceflow.viewmodel.AdminViewModel
+import com.example.serviceflow.viewmodel.AuthViewModel
+import com.example.serviceflow.viewmodel.FuncionarioViewModel
+import com.example.serviceflow.util.Constants.ROLE_ADMIN
+import org.koin.androidx.compose.koinViewModel
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -32,7 +34,7 @@ class MainActivity : ComponentActivity() {
 
 @Composable
 fun ServiceFlowApp() {
-    val authViewModel: AuthViewModel = viewModel()
+    val authViewModel: AuthViewModel = koinViewModel()
     val currentUser by authViewModel.currentUser.collectAsState()
     var selectedOS by remember { mutableStateOf<OrdemServico?>(null) }
 
@@ -42,19 +44,19 @@ fun ServiceFlowApp() {
             onLoginSuccess = { _ -> }
         )
     } else {
-        val tipoUsuario = if (currentUser?.tipo == "admin") TipoUsuario.ADMIN else TipoUsuario.FUNCIONARIO
+        val tipoUsuario = if (currentUser?.tipo == ROLE_ADMIN) TipoUsuario.ADMIN else TipoUsuario.FUNCIONARIO
 
         if (selectedOS != null) {
             DetalheOSScreen(
                 os = selectedOS!!,
                 isAdmin = tipoUsuario == TipoUsuario.ADMIN,
-                viewModel = if (tipoUsuario == TipoUsuario.FUNCIONARIO) viewModel<FuncionarioViewModel>() else null,
+                viewModel = if (tipoUsuario == TipoUsuario.FUNCIONARIO) koinViewModel<FuncionarioViewModel>() else null,
                 onBack = { selectedOS = null }
             )
         } else {
             when (tipoUsuario) {
                 TipoUsuario.ADMIN -> {
-                    val adminViewModel: AdminViewModel = viewModel()
+                    val adminViewModel: AdminViewModel = koinViewModel()
                     AdminDashboardScreen(
                         currentUser = currentUser!!,
                         viewModel = adminViewModel,
@@ -63,7 +65,7 @@ fun ServiceFlowApp() {
                     )
                 }
                 TipoUsuario.FUNCIONARIO -> {
-                    val funcViewModel: FuncionarioViewModel = viewModel()
+                    val funcViewModel: FuncionarioViewModel = koinViewModel()
                     FuncionarioDashboardScreen(
                         currentUser = currentUser!!,
                         viewModel = funcViewModel,

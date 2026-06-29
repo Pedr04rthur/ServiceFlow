@@ -1,17 +1,21 @@
 package com.example.serviceflow.model
 
+import androidx.room.Entity
+import androidx.room.PrimaryKey
 import com.google.firebase.Timestamp
 
+@Entity(tableName = "users")
 data class User(
-    val id: String = "",
+    @PrimaryKey val id: String = "",
     val nome: String = "",
     val email: String = "",
     val tipo: String = "funcionario",
     val departamento: String = ""
 )
 
+@Entity(tableName = "ordens_servico")
 data class OrdemServico(
-    val id: String = "",
+    @PrimaryKey val id: String = "",
     val numero: String = "",
     val titulo: String = "",
     val descricao: String = "",

@@ -1,3 +1,39 @@
 <resources>
     <string name="app_name">ServiceFlow</string>
+    <string name="filter_all_feminine">todas</string>
+    <string name="filter_all_masculine">todos</string>
+    <string name="status_pending">pendente</string>
+    <string name="status_completed">concluida</string>
+    <string name="label_all">Todas</string>
+    <string name="label_pending">Pendentes</string>
+    <string name="label_completed">Concluídas</string>
+    <string name="filter_by_status">Filtrar por status</string>
+    <string name="title_ordens_servico">Ordens de Serviço</string>
+    <string name="role_admin">Administrador</string>
+    <string name="action_logout">Sair</string>
+    <string name="action_new_os">Nova OS</string>
+    <string name="hint_search_title">Buscar por título...</string>
+    <string name="empty_ordens_message">Nenhuma ordem encontrada.\nClique no + para criar uma nova.</string>
+    <string name="title_new_os">Nova Ordem de Serviço</string>
+    <string name="label_title">Título</string>
+    <string name="label_description">Descrição</string>
+    <string name="label_department">Departamento</string>
+    <string name="label_employee">Funcionário</string>
+    <string name="action_send_os">Enviar OS</string>
+    <string name="error_missing_description">Descreva o que foi realizado antes de concluir.</string>
+    <string name="error_concluding_os">Erro ao concluir OS</string>
+    <string name="success_concluding_os">Ordem concluída!</string>
+    <string name="error_login_empty">Preencha e-mail e senha.</string>
+    <string name="error_login_invalid">E-mail ou senha inválidos.</string>
+    <string name="label_login">Entrar</string>
+    <string name="error_missing_fields">Preencha todos os campos obrigatórios.</string>
+    <string name="error_creating_os">Erro ao criar OS</string>
+    <string name="success_creating_os">Ordem criada com sucesso!</string>
+    <string-array name="departments_list">
+        <item>Manutenção</item>
+        <item>TI</item>
+        <item>Limpeza</item>
+        <item>Segurança</item>
+        <item>Administrativo</item>
+    </string-array>
 </resources>

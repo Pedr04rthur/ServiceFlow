@@ -18,8 +18,11 @@ import androidx.compose.ui.unit.sp
 import com.example.serviceflow.model.OrdemServico
 import com.example.serviceflow.ui.components.StatusBadge
 import com.example.serviceflow.ui.theme.Azul500
-import com.example.serviceflow.modelos.FuncAction
-import com.example.serviceflow.modelos.FuncionarioViewModel
+import com.example.serviceflow.viewmodel.FuncAction
+import com.example.serviceflow.viewmodel.FuncionarioViewModel
+import com.example.serviceflow.R
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import java.text.SimpleDateFormat
 import java.util.*
 
@@ -33,6 +36,7 @@ fun DetalheOSScreen(
 ) {
     BackHandler(onBack = onBack)
 
+    val context = LocalContext.current
     val action by viewModel?.action?.collectAsState() ?: remember { mutableStateOf(FuncAction.Idle) }.let { s -> derivedStateOf { s.value } }
     var realizadoPor by remember { mutableStateOf(os.realizadoPor) }
     var snackbarMessage by remember { mutableStateOf<String?>(null) }
@@ -41,8 +45,15 @@ fun DetalheOSScreen(
 
     LaunchedEffect(action) {
         when (action) {
-            is FuncAction.OrdemConcluida -> { snackbarMessage = "Ordem concluída!"; viewModel?.resetAction(); onBack() }
-            is FuncAction.Error -> { snackbarMessage = (action as FuncAction.Error).message; viewModel?.resetAction() }
+            is FuncAction.OrdemConcluida -> { 
+                snackbarMessage = context.getString(R.string.success_concluding_os)
+                viewModel?.resetAction()
+                onBack() 
+            }
+            is FuncAction.Error -> { 
+                snackbarMessage = (action as FuncAction.Error).message.asString(context)
+                viewModel?.resetAction() 
+            }
             else -> {}
         }
     }
