@@ -11,8 +11,11 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.viewinterop.AndroidView
 import com.example.serviceflow.model.TipoUsuario
-import com.example.serviceflow.modelos.AuthViewModel
-import com.example.serviceflow.modelos.LoginState
+import com.example.serviceflow.viewmodel.AuthViewModel
+import com.example.serviceflow.viewmodel.LoginState
+import com.example.serviceflow.R
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -20,6 +23,7 @@ fun LoginScreen(
     viewModel: AuthViewModel,
     onLoginSuccess: (TipoUsuario) -> Unit
 ) {
+    val context = LocalContext.current
     val loginState by viewModel.loginState.collectAsState()
     var email by remember { mutableStateOf("") }
     var senha by remember { mutableStateOf("") }
@@ -93,14 +97,14 @@ fun LoginScreen(
             if (loginState is LoginState.Loading) {
                 CircularProgressIndicator(modifier = Modifier.size(20.dp))
             } else {
-                Text("Entrar")
+                Text(stringResource(R.string.label_login))
             }
         }
 
         if (loginState is LoginState.Error) {
             Spacer(Modifier.height(8.dp))
             Text(
-                text = (loginState as LoginState.Error).message,
+                text = (loginState as LoginState.Error).message.asString(context),
                 color = MaterialTheme.colorScheme.error,
                 fontSize = 12.sp
             )

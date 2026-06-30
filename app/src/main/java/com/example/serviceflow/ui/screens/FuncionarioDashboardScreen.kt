@@ -18,7 +18,7 @@ import com.example.serviceflow.model.OrdemServico
 import com.example.serviceflow.model.User
 import com.example.serviceflow.ui.components.*
 import com.example.serviceflow.ui.theme.Azul500
-import com.example.serviceflow.modelos.FuncionarioViewModel
+import com.example.serviceflow.viewmodel.FuncionarioViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable

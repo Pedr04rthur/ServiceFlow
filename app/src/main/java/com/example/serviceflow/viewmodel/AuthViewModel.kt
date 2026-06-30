@@ -2,21 +2,23 @@ package com.example.serviceflow.viewmodel
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.serviceflow.R
 import com.example.serviceflow.model.User
 import com.example.serviceflow.repository.ServiceFlowRepository
+import com.example.serviceflow.util.UiText
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 
 sealed class LoginState {
-    object Idle : LoginState()
-    object Loading : LoginState()
+    data object Idle : LoginState()
+    data object Loading : LoginState()
     data class Success(val user: User) : LoginState()
-    data class Error(val message: String) : LoginState()
+    data class Error(val message: UiText) : LoginState()
 }
 
 class AuthViewModel(
-    private val repo: ServiceFlowRepository = ServiceFlowRepository()
+    private val repo: ServiceFlowRepository
 ) : ViewModel() {
 
     private val _loginState = MutableStateFlow<LoginState>(LoginState.Idle)
@@ -32,7 +34,7 @@ class AuthViewModel(
 
     fun login(email: String, senha: String) {
         if (email.isBlank() || senha.isBlank()) {
-            _loginState.value = LoginState.Error("Preencha e-mail e senha.")
+            _loginState.value = LoginState.Error(UiText.StringResource(R.string.error_login_empty))
             return
         }
         viewModelScope.launch {
@@ -40,7 +42,7 @@ class AuthViewModel(
             val result = repo.login(email.trim(), senha)
             _loginState.value = result.fold(
                 onSuccess = { LoginState.Success(it) },
-                onFailure = { LoginState.Error("E-mail ou senha inválidos.") }
+                onFailure = { LoginState.Error(UiText.StringResource(R.string.error_login_invalid)) }
             )
         }
     }
